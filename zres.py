@@ -6,7 +6,7 @@ import numpy as np
 
 class Zres:
     def __init__(self, pdb_code):
-        self.pdb_code = pdb_code
+        self.pdb_code = pdb_code.lower()
         self.url = "https://opm-assets.storage.googleapis.com/pdb/" + self.pdb_code + ".pdb"
         self.structfile = pdb_code + ".pdb"
         self.zres = defaultdict(list)
