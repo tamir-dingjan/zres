@@ -13,12 +13,12 @@ class Zres:
 
     def run(self):
         # download the structure from OPM, removing END lines
+        r = requests.get(self.url)
+        # Check if OPM has this file
+        if r.status_code == 404:
+            print("OPM entry does not exist: %s" % self.pdb_code)
+            return
         with open(self.structfile, 'w') as outfile:
-            r = requests.get(self.url)
-            # Check if OPM has this file
-            if r.status_code == 404:
-                print("OPM entry does not exist: %s" % self.pdb_code)
-                return
             for line in r.text.split("\n"):
                 if not "END" in line:
                     outfile.write(line+"\n")
