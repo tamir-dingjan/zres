@@ -33,6 +33,11 @@ class Zres:
         outer = self.struct.topology.select("resname DUM and name O")
         inner = self.struct.topology.select("resname DUM and name N")
 
+        # Catch cases without both membranes defined in OPM
+        if len(outer) == 0 or len(inner) == 0:
+            print("OPM entry missing membrane information: %s" % self.pdb_code)
+            return
+
         # Check if the membranes are aligned on the Z axis
         # OPM structures should be already aligned
         for border in [outer, inner]:

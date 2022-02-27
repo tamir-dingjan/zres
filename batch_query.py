@@ -15,8 +15,11 @@ for i in query_codes:
         valid_results.append(analysis)
         valid_codes.append(i)
 
-results = pd.concat(valid_results)
-results.index = valid_codes
+if len(valid_results) != 0:
+    results = pd.concat(valid_results)
+    results.index = valid_codes
 
-# Save out summary
-results.to_csv('results.csv')
+    # Save out summary
+    results.to_csv('results.csv')
+else:
+    print("No valid results.")
