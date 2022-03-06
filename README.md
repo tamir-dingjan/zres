@@ -11,3 +11,7 @@ Each column entry is a list of C-alpha Z-axis coordinates normalised between 0 (
 import zres
 result = zres.Zres(PDB_CODE).run()
 ```
+
+To use the ```batch_query.py```, provide a CSV-formatted file with the PDB codes in a column labelled ```'PDB'```
+
+Enjoy!
