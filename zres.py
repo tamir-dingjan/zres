@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 import mdtraj as md
 import numpy as np
+import os.path
 
 class Zres:
     def __init__(self, pdb_code):
@@ -12,14 +13,23 @@ class Zres:
         self.zres = defaultdict(list)
 
     def run(self):
-        # download the structure from OPM, removing END lines
-        r = requests.get(self.url)
-        # Check if OPM has this file
-        if r.status_code == 404:
-            print("OPM entry does not exist: %s" % self.pdb_code)
-            return
+        # Check if we have already downloaded the file
+        # Useful for resuming a batch analysis
+        if not os.path.isfile(self.structfile):
+            # download the structure from OPM, removing END lines
+            r = requests.get(self.url)
+            # Check if OPM has this file
+            if r.status_code == 404:
+                print("OPM entry does not exist: %s" % self.pdb_code)
+                return
+            else:
+                struct_raw = r.text.split("\n")
+        else:
+            with open(self.structfile, 'r') as infile:
+                struct_raw = infile.readlines()
+        
         with open(self.structfile, 'w') as outfile:
-            for line in r.text.split("\n"):
+            for line in struct_raw:
                 if not "END" in line:
                     outfile.write(line+"\n")
         
@@ -28,6 +38,7 @@ class Zres:
             self.struct = md.load(self.structfile)
         except:
             print("ERROR: Couldn't load file %s" % self.structfile)
+            return
 
         # identify transmembrane region
         outer = self.struct.topology.select("resname DUM and name O")
@@ -47,6 +58,10 @@ class Zres:
         self.outer_z = np.mean(self.struct.xyz[0, outer, 2])
         self.inner_z = np.mean(self.struct.xyz[0, inner, 2])
         self.memb_z = np.max((self.outer_z, self.inner_z)) - np.min((self.outer_z, self.inner_z))
+
+        # Add border region buffers of 15 Angstrom (1.5 nm)
+        self.outer_z = self.outer_z + 1.5
+        self.inner_z = self.inner_z - 1.5
 
         # Store Z-positions of C-alphas within the transmembrane region
         calphas = self.struct.topology.select("name CA")
