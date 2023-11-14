@@ -1,17 +1,17 @@
 # zres
 
-A tool for analysing the Z-axis distribution of amino acids in the OPM database.
+A tool for analysing the Z-axis distribution of amino acids using [PPM 3.0, made available by the Orientations of Proteins in Membranes database](https://opm.phar.umich.edu/).
 
 
 ## Usage
-Given a PDB code, zres will return a single-row Pandas DataFrame containing a column for each amino acid type found in the transmembrane region.
-Each column entry is a list of C-alpha Z-axis coordinates normalised between 0 (for the inner membrane barrier) and 1 (for the outer membrane barrier).
+Given a membrane-embedded structure file, zres will return a single-row Pandas DataFrame containing a column for each amino acid type found in the transmembrane region.
+Each column entry is a list of C-alpha Z-axis coordinates in angstrom relative to the membrane center Z-value. 
 
 ```
 import zres
-result = zres.Zres(PDB_CODE).run()
+result = zres.Zres(file).run()
 ```
 
-To use the ```batch_query.py```, provide a CSV-formatted file with the PDB codes in a column labelled ```'PDB'```
+The ```batch_query.py``` automates fetching, PPM processing, and Zres analysis given a TSV file containing Uniprot IDs in a column labelled ```'Entry'```
 
 Enjoy!
