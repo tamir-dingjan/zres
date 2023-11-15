@@ -46,7 +46,7 @@ def fetch_structures():
     tm_region_buffer = 10
 
     for entry_id, tm in zip(query["Entry"].to_list(), query["Transmembrane"].to_list()):
-        if tm == np.nan:
+        if (tm == np.nan) or (pd.isna(tm)):
             logging.warning("No TM location information for entry: %s" % entry_id)
             continue
         
