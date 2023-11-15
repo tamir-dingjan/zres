@@ -44,12 +44,13 @@ def fetch_structures():
     # Fetch the structure files
     local_structures = []
     tm_region_buffer = 10
-    
+
     for entry_id, tm in zip(query["Entry"].to_list(), query["Transmembrane"].to_list()):
         if tm == "":
             logging.warning("No TM location information for entry: %s" % entry_id)
             continue
         
+        logging.info("Entry: %s, Transmembrane field: %s" % (entry_id, tm))
         locs = tm.split()[1].split(";")[0]
         try:
             tm_start = int(locs.split(".")[0]) - tm_region_buffer
