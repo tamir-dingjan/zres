@@ -46,17 +46,17 @@ def fetch_structures():
     tm_region_buffer = 10
 
     for entry_id, tm in zip(query["Entry"].to_list(), query["Transmembrane"].to_list()):
-        if tm == "":
+        if tm == np.nan:
             logging.warning("No TM location information for entry: %s" % entry_id)
             continue
         
-        logging.info("Entry: %s, Transmembrane field: %s" % (entry_id, tm))
-        locs = tm.split()[1].split(";")[0]
         try:
+            locs = tm.split()[1].split(";")[0]
             tm_start = int(locs.split(".")[0]) - tm_region_buffer
             tm_end = int(locs.split(".")[-1]) + tm_region_buffer
         except:
             logging.warning("Couldn't process TM location for entry: %s" % entry_id)
+            logging.warning("Entry: %s, Transmembrane field: %s" % (entry_id, tm))
             continue
         
         structfile = entry_id + ".pdb"
