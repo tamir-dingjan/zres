@@ -114,13 +114,13 @@ def analyse_structures():
     for i in result_structures:
         analysis = zres.Zres(i).run()
         if not analysis is None:
+            analysis.index = [i]*len(analysis)
             valid_results.append(analysis)
             valid_structures.append(i)
 
     if len(valid_results) != 0:
         results = pd.concat(valid_results)
-        results.index = valid_structures
-
+        
         # Save out summary
         results.to_csv('results.csv')
         logging.info("Results saved to 'results.csv'.")
@@ -129,5 +129,5 @@ def analyse_structures():
 
 if __name__ == "__main__":
     local_structures = fetch_structures()
-    run_ppm(local_structures)
+    #run_ppm(local_structures)
     analyse_structures()
