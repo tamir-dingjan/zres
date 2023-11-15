@@ -23,13 +23,41 @@ if len(sys.argv) == 3:
         sys.exit("\nN-terminal topology must be either 'in' or 'out'. \nUsage: $> python batch_query query.csv (in|out)\n")
 else:
     logging.debug(sys.argv)
-    sys.exit("\nUsage: $> python batch_query.py query.csv (in|out)\n")
+    sys.exit("\nUsage: $> python batch_query.py query.tsv (in|out)\n")
+
+
+def is_desired_tm_portion(x, tm_start, tm_end):
+    if not "ATOM" in x:
+        return True
+    else:
+        try:
+            resnum = int(x[22:26])
+        except:
+            logging.warning("Couldn't read residue number. Bailing on this file.")
+            return False
+        
+        if (resnum > tm_start) and (resnum < tm_end):
+            return True
 
 
 def fetch_structures():
     # Fetch the structure files
     local_structures = []
-    for entry_id in query["Entry"].to_list():
+    tm_region_buffer = 10
+    
+    for entry_id, tm in zip(query["Entry"].to_list(), query["Transmembrane"].to_list()):
+        if tm == "":
+            logging.warning("No TM location information for entry: %s" % entry_id)
+            continue
+        
+        locs = tm.split()[1].split(";")[0]
+        try:
+            tm_start = int(locs.split(".")[0]) - tm_region_buffer
+            tm_end = int(locs.split(".")[-1]) + tm_region_buffer
+        except:
+            logging.warning("Couldn't process TM location for entry: %s" % entry_id)
+            continue
+        
         structfile = entry_id + ".pdb"
         if os.path.isfile(structfile):
             logging.info("Found file: %s" % structfile)
@@ -44,7 +72,7 @@ def fetch_structures():
             try:
                 with open(structfile, 'w') as outfile:
                     for line in r.text.split("\n"):
-                        if not "END" in line:
+                        if (not "END" in line) and (is_desired_tm_portion(line, tm_start, tm_end)):
                             outfile.write(line+"\n")
                 logging.info("Downloaded file: %s" % structfile)
                 local_structures.append(structfile)

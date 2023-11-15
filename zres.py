@@ -16,7 +16,7 @@ class Zres:
         self.zres = defaultdict(list)
     
     def run(self):
-        # load into MDTraj
+        # load structure
         try:
             struct = mda.Universe(self.structfile)
         except:
