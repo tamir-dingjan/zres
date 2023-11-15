@@ -129,5 +129,5 @@ def analyse_structures():
 
 if __name__ == "__main__":
     local_structures = fetch_structures()
-    #run_ppm(local_structures)
+    run_ppm(local_structures)
     analyse_structures()
