@@ -56,4 +56,4 @@ class Zres:
             self.zres[atom.resname].append(z)
 
         # report as a pandas dataframe
-        return pd.DataFrame.from_dict({x:[self.zres[x]] for x in self.zres.keys()})
+        return pd.DataFrame(dict([(k,pd.Series(v)) for k,v in self.zres.items()])).melt(var_name="residue").dropna() 

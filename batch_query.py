@@ -82,9 +82,6 @@ def fetch_structures():
     return local_structures
 
 
-# TODO: Crop the structure files to the TM portion identified in the query results
-
-
 def run_ppm(local_structures):
     # Build the PPM input
     logging.info("Writing PPM input file.")
