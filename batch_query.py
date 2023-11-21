@@ -57,45 +57,67 @@ def fetch_structures():
     local_structures = []
     tm_region_buffer = 10
 
-    for entry_id, tm in zip(query["Entry"].to_list(), query["Transmembrane"].to_list()):
-        if (tm == np.nan) or (pd.isna(tm)):
-            logging.warning("No TM location information for entry: %s" % entry_id)
-            continue
-        
-        try:
-            locs = tm.split()[1].split(";")[0]
-            tm_start = int(locs.split(".")[0]) - tm_region_buffer
-            tm_end = int(locs.split(".")[-1]) + tm_region_buffer
-        except:
-            logging.warning("Couldn't process TM location for entry: %s" % entry_id)
-            logging.warning("Entry: %s, Transmembrane field: %s" % (entry_id, tm))
-            continue
-        
-        structfile = entry_id + ".pdb"
-        if os.path.isfile(structfile):
-            logging.info("Found file: %s" % structfile)
-            local_structures.append(structfile)
-            continue
-        else:
-            url = "https://alphafold.ebi.ac.uk/files/AF-" + entry_id + "-F1-model_v4.pdb"
-            r = requests.get(url)
-            if r.status_code == 404:
-                logging.warning("Couldn't find entry at provider's URL: %s" %  url)
-                continue    
+    if args.crop:
+        for entry_id, tm in zip(query["Entry"].to_list(), query["Transmembrane"].to_list()):
+            if (tm == np.nan) or (pd.isna(tm)):
+                logging.warning("No TM location information for entry: %s" % entry_id)
+                continue
+            
             try:
-                with open(structfile, 'w') as outfile:
-                    for line in r.text.split("\n"):
-                        if args.crop:
+                locs = tm.split()[1].split(";")[0]
+                tm_start = int(locs.split(".")[0]) - tm_region_buffer
+                tm_end = int(locs.split(".")[-1]) + tm_region_buffer
+            except:
+                logging.warning("Couldn't process TM location for entry: %s" % entry_id)
+                logging.warning("Entry: %s, Transmembrane field: %s" % (entry_id, tm))
+                continue
+            
+            structfile = entry_id + ".pdb"
+            if os.path.isfile(structfile):
+                logging.info("Found file: %s" % structfile)
+                local_structures.append(structfile)
+                continue
+            else:
+                url = "https://alphafold.ebi.ac.uk/files/AF-" + entry_id + "-F1-model_v4.pdb"
+                r = requests.get(url)
+                if r.status_code == 404:
+                    logging.warning("Couldn't find entry at provider's URL: %s" %  url)
+                    continue    
+                try:
+                    with open(structfile, 'w') as outfile:
+                        for line in r.text.split("\n"):
                             if (not "END" in line) and (is_desired_tm_portion(line, tm_start, tm_end)):
                                 outfile.write(line+"\n")
-                        else:
+                            
+                    logging.info("Downloaded file: %s" % structfile)
+                    local_structures.append(structfile)
+                except:
+                    logging.critical("Couldn't write file to disk: %s" % structfile)
+    else:
+        for entry_id in query["Entry"].to_list():
+            
+            structfile = entry_id + ".pdb"
+            if os.path.isfile(structfile):
+                logging.info("Found file: %s" % structfile)
+                local_structures.append(structfile)
+                continue
+            else:
+                url = "https://alphafold.ebi.ac.uk/files/AF-" + entry_id + "-F1-model_v4.pdb"
+                r = requests.get(url)
+                if r.status_code == 404:
+                    logging.warning("Couldn't find entry at provider's URL: %s" %  url)
+                    continue    
+                try:
+                    with open(structfile, 'w') as outfile:
+                        for line in r.text.split("\n"):
                             if (not "END" in line):
                                 outfile.write(line+"\n")
 
-                logging.info("Downloaded file: %s" % structfile)
-                local_structures.append(structfile)
-            except:
-                logging.critical("Couldn't write file to disk: %s" % structfile)
+                    logging.info("Downloaded file: %s" % structfile)
+                    local_structures.append(structfile)
+                except:
+                    logging.critical("Couldn't write file to disk: %s" % structfile)
+    
     return local_structures
 
 
