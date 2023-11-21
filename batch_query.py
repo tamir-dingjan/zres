@@ -5,6 +5,7 @@ import os
 import requests
 import logging
 import zres
+import argparse
 
 import pandas as pd
 import numpy as np
@@ -15,15 +16,26 @@ logging.basicConfig(
     level=logging.DEBUG
 )
 
+# Construct argument parser
+ap = argparse.ArgumentParser()
+
+ap.add_argument("-q", "--query", required=True, help="tab-seperated query file containing UniProt IDs")
+ap.add_argument("-n", "--nterm", required=True, help="N-terminal topology. Must be either 'in' or 'out'")
+ap.add_argument("--crop", required=True, action=argparse.BooleanOptionalAction)
+
+args = ap.parse_args()
+logging.debug(vars(args))
+
 # Read the Uniprot results 
-if len(sys.argv) == 3:
-    query = pd.read_csv(sys.argv[1], sep="\t")
-    nterm_topol = sys.argv[2]
-    if not (nterm_topol in ["in", "out"]):
-        sys.exit("\nN-terminal topology must be either 'in' or 'out'. \nUsage: $> python batch_query query.csv (in|out)\n")
+if os.path.isfile(args.query):
+    query = pd.read_csv(args.query, sep="\t")
 else:
-    logging.debug(sys.argv)
-    sys.exit("\nUsage: $> python batch_query.py query.tsv (in|out)\n")
+    sys.exit("Couldn't find query file: ", args.query)
+
+if args.nterm in ["in", "out"]:
+    nterm_topol = args.nterm
+else:
+    sys.exit("\nN-terminal topology must be either 'in' or 'out'. \nUsage: $> python batch_query query.csv (in|out)\n")
 
 
 def is_desired_tm_portion(x, tm_start, tm_end):
@@ -73,8 +85,13 @@ def fetch_structures():
             try:
                 with open(structfile, 'w') as outfile:
                     for line in r.text.split("\n"):
-                        if (not "END" in line) and (is_desired_tm_portion(line, tm_start, tm_end)):
-                            outfile.write(line+"\n")
+                        if args.crop:
+                            if (not "END" in line) and (is_desired_tm_portion(line, tm_start, tm_end)):
+                                outfile.write(line+"\n")
+                        else:
+                            if (not "END" in line):
+                                outfile.write(line+"\n")
+
                 logging.info("Downloaded file: %s" % structfile)
                 local_structures.append(structfile)
             except:
