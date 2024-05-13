@@ -102,7 +102,7 @@ for i in structures:
 
     # Analyse residue Z-positions
     analysis = zres.Zres(structfile).run_on_modified_structure(
-        struct, segid=selected_segment_label, buffer=0
+        struct, segid=selected_segment_label, buffer=40
     )
     if not analysis is None:
         analysis.index = [structfile] * len(analysis)
