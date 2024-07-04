@@ -36,7 +36,7 @@ def analyse_structure(file):
     else:
         analysis.to_csv(outfile)
         
-        logging.info("Results saved to '{%s}." % outfile)
+        logging.info("Results saved to {%s}" % outfile)
 
 if __name__ == "__main__":
     analyse_structure(args.file)
