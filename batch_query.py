@@ -22,6 +22,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-q", "--query", required=True, help="tab-seperated query file containing UniProt IDs")
 ap.add_argument("-n", "--nterm", required=True, help="N-terminal topology. Must be either 'in' or 'out'")
 ap.add_argument("--crop", required=True, action=argparse.BooleanOptionalAction)
+ap.add_argument("--analysis", required=False, action=argparse.BooleanOptionalAction)
 
 args = ap.parse_args()
 logging.debug(vars(args))
@@ -148,6 +149,7 @@ def analyse_structures():
 
     valid_results = []
     valid_structures = []
+    membrane_positions = []
 
     # Collect zres results
     for i in result_structures:
@@ -157,16 +159,25 @@ def analyse_structures():
             valid_results.append(analysis)
             valid_structures.append(i)
 
+        membrane_boundaries = zres.Zres(i).get_membrane_boundaries()
+        if not membrane_boundaries is None:
+            membrane_positions.append(membrane_boundaries)
+
     if len(valid_results) != 0:
         results = pd.concat(valid_results)
+        membrane = pd.concat(membrane_positions)
         
         # Save out summary
         results.to_csv('results.csv')
         logging.info("Results saved to 'results.csv'.")
+
+        membrane.to_csv("membrane.csv")
+        logging.info("Membrane positions saved to 'membrane.csv'.")
     else:
         logging.info("No valid results from structure analysis.")
 
 if __name__ == "__main__":
-    local_structures = fetch_structures()
-    run_ppm(local_structures)
+    if not args.analysis:
+        local_structures = fetch_structures()
+        run_ppm(local_structures)
     analyse_structures()
