@@ -19,24 +19,26 @@ logging.basicConfig(
 # Construct argument parser
 ap = argparse.ArgumentParser()
 
-ap.add_argument("-q", "--query", required=True, help="tab-seperated query file containing UniProt IDs")
-ap.add_argument("-n", "--nterm", required=True, help="N-terminal topology. Must be either 'in' or 'out'")
-ap.add_argument("--crop", required=True, action=argparse.BooleanOptionalAction)
+ap.add_argument("-q", "--query", required=False, help="tab-seperated query file containing UniProt IDs")
+ap.add_argument("-n", "--nterm", required=False, help="N-terminal topology. Must be either 'in' or 'out'")
+ap.add_argument("--crop", required=False, action=argparse.BooleanOptionalAction)
 ap.add_argument("--analysis", required=False, action=argparse.BooleanOptionalAction)
 
 args = ap.parse_args()
 logging.debug(vars(args))
 
-# Read the Uniprot results 
-if os.path.isfile(args.query):
-    query = pd.read_csv(args.query, sep="\t")
-else:
-    sys.exit("Couldn't find query file: ", args.query)
+# If running in analysis mode, don't fetch structures
+if not args.analysis:
+    # Read the Uniprot results 
+    if os.path.isfile(args.query):
+        query = pd.read_csv(args.query, sep="\t")
+    else:
+        sys.exit("Couldn't find query file: ", args.query)
 
-if args.nterm in ["in", "out"]:
-    nterm_topol = args.nterm
-else:
-    sys.exit("\nN-terminal topology must be either 'in' or 'out'. \nUsage: $> python batch_query query.csv (in|out)\n")
+    if args.nterm in ["in", "out"]:
+        nterm_topol = args.nterm
+    else:
+        sys.exit("\nN-terminal topology must be either 'in' or 'out'. \nUsage: $> python batch_query query.csv (in|out)\n")
 
 
 def is_desired_tm_portion(x, tm_start, tm_end):
