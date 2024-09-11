@@ -16,7 +16,7 @@ class Zres:
         self.structfile = structfile
         self.zres = defaultdict(list)
 
-    def run(self):
+    def run(self, buffer: int = 10):
         # load structure
         try:
             struct = mda.Universe(self.structfile)
@@ -41,7 +41,7 @@ class Zres:
         zmin = np.min((outer_z, inner_z))
 
         # Add border region buffers of 10 Angstrom?
-        buffer_size = 10
+        buffer_size = buffer
         # self.outer_z = self.outer_z + buffer_size
         # self.inner_z = self.inner_z - buffer_size
 
